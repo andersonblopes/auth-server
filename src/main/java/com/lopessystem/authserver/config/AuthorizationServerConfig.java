@@ -30,6 +30,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .scopes("write", "read")
                 .accessTokenValiditySeconds(60 * 60 * 6) // 6 hours
                 .and()
+                .withClient("checkToken")
+                .secret(passwordEncoder.encode("check123"))
+                .and()
                 .withClient("web-app")
                 .secret(passwordEncoder.encode("web-123"))
                 .authorizedGrantTypes("basic")
