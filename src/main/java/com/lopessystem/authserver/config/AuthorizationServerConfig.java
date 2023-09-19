@@ -43,7 +43,17 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .withClient("email-service")
                 .secret(passwordEncoder.encode("email-ms-123"))
                 .authorizedGrantTypes("client_credentials")
-                .scopes("read");
+                .scopes("read")
+                // example url called by client in order to retrieve authorization code
+                // http://localhost:9000/oauth/authorize?response_type=code&client_id=power-bi-app&state=abc&redirect_uri=http://power-bi-app/authorize
+                // returns: http://power-bi-app/authorize?code=oy-XBH&state=abc
+                .and()
+                .withClient("power-bi-app")
+                .secret(passwordEncoder.encode("powerBi123"))
+                .authorizedGrantTypes("authorization_code")
+                .redirectUris("http://power-bi-app/authorize")
+                .scopes("write", "read");
+
     }
 
     @Override
