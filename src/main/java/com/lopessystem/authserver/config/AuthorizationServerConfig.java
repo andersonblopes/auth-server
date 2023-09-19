@@ -1,90 +1,68 @@
 package com.lopessystem.authserver.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2TokenFormat;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
+import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
+import org.springframework.security.web.SecurityFilterChain;
+
+import java.time.Duration;
+import java.util.Arrays;
 
 @Configuration
-@EnableAuthorizationServer
-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+public class AuthorizationServerConfig {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients
-                .inMemory()
-                .withClient("clinic-api")
-                .secret(passwordEncoder.encode("api-123"))
-                .authorizedGrantTypes("password", "refresh_token", "client_credentials")
-                .scopes("write", "read")
-                .accessTokenValiditySeconds(60 * 5) // 5 minutes
-                .refreshTokenValiditySeconds(60 * 60 * 5) // 5 hours
-
-                .and()
-                .withClient("resource-server-app")
-                .secret(passwordEncoder.encode("check123"))
-
-                .and()
-                .withClient("email-service")
-                .secret(passwordEncoder.encode("email-ms-123"))
-                .authorizedGrantTypes("client_credentials")
-                .scopes("read")
-                // example url called by client in order to retrieve authorization code
-                // http://localhost:9000/oauth/authorize?response_type=code&client_id=power-bi-app&state=abc&redirect_uri=http://power-bi-app/authorize
-                // returns: http://power-bi-app/authorize?code=oy-XBH&state=abc
-                .and()
-                .withClient("power-bi-app")
-                .secret(passwordEncoder.encode("powerBi123"))
-                .authorizedGrantTypes("authorization_code")
-                .redirectUris("http://localhost:8082")
-                .scopes("write", "read")
-                // example url called by client in order to retrieve an access token
-                // http://localhost:9000/oauth/authorize?response_type=token&client_id=webadmin&state=abc&redirect_uri=http://webadmin/home
-                // return: http://webadmin/home#access_token=-GiMcyra44YOyU5BwumSGywh5Co&token_type=bearer&state=abc&expires_in=43199&scope=read%20write
-                .and()
-                .withClient("webadmin")
-                .authorizedGrantTypes("implicit")
-                .redirectUris("http://webadmin/home")
-                .scopes("write", "read");
-
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain authFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        return http.build();
     }
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        // security.checkTokenAccess("isAuthenticated()");
-        security.checkTokenAccess("permitAll()");
+    @Bean
+    public ProviderSettings providerSettings(ApplicationConfig applicationConfig) {
+        return ProviderSettings.builder()
+                .issuer(applicationConfig.getProviderUrl())
+                .build();
     }
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
-                .reuseRefreshTokens(false)
-                .tokenStore(redisTokenStore());
+    @Bean
+    public RegisteredClientRepository clientRepository(PasswordEncoder encoder) {
+
+        RegisteredClient clinicApi = RegisteredClient
+                .withId("1")
+                .clientId("clinic-api")
+                .clientSecret(encoder.encode("api-123"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("read")
+                .scope("write")
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenFormat(OAuth2TokenFormat.REFERENCE)
+                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
+                .build();
+
+        RegisteredClient resourceServer = RegisteredClient
+                .withId("2")
+                .clientId("resource-server-app")
+                .clientSecret(encoder.encode("check123"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                .build();
+
+        return new InMemoryRegisteredClientRepository(Arrays.asList(clinicApi, resourceServer));
     }
 
-    private TokenStore redisTokenStore() {
-        return new RedisTokenStore(redisConnectionFactory);
-    }
 }

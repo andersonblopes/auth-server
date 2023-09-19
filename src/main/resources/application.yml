@@ -5,3 +5,7 @@ spring:
     host: localhost
     password:
     port: 6379
+
+app:
+  auth:
+    provider-url: http://localhost:9000
