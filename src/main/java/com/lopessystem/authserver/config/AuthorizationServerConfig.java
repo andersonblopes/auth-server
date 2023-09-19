@@ -51,7 +51,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .withClient("power-bi-app")
                 .secret(passwordEncoder.encode("powerBi123"))
                 .authorizedGrantTypes("authorization_code")
-                .redirectUris("http://power-bi-app/authorize")
+                .redirectUris("http://localhost:8082")
                 .scopes("write", "read");
 
     }
