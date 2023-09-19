@@ -30,18 +30,20 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .inMemory()
                 .withClient("clinic-api")
                 .secret(passwordEncoder.encode("api-123"))
-                .authorizedGrantTypes("password", "refresh_token")
+                .authorizedGrantTypes("password", "refresh_token", "client_credentials")
                 .scopes("write", "read")
                 .accessTokenValiditySeconds(60 * 5) // 5 minutes
                 .refreshTokenValiditySeconds(60 * 60 * 5) // 5 hours
+
                 .and()
-                .withClient("checkToken")
+                .withClient("resource-server-app")
                 .secret(passwordEncoder.encode("check123"))
+
                 .and()
-                .withClient("web-app")
-                .secret(passwordEncoder.encode("web-123"))
-                .authorizedGrantTypes("basic")
-                .scopes("write", "read");
+                .withClient("email-service")
+                .secret(passwordEncoder.encode("email-ms-123"))
+                .authorizedGrantTypes("client_credentials")
+                .scopes("read");
     }
 
     @Override
