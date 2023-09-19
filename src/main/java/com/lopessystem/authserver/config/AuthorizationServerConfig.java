@@ -52,6 +52,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .secret(passwordEncoder.encode("powerBi123"))
                 .authorizedGrantTypes("authorization_code")
                 .redirectUris("http://localhost:8082")
+                .scopes("write", "read")
+                // example url called by client in order to retrieve an access token
+                // http://localhost:9000/oauth/authorize?response_type=token&client_id=webadmin&state=abc&redirect_uri=http://webadmin/home
+                // return: http://webadmin/home#access_token=-GiMcyra44YOyU5BwumSGywh5Co&token_type=bearer&state=abc&expires_in=43199&scope=read%20write
+                .and()
+                .withClient("webadmin")
+                .authorizedGrantTypes("implicit")
+                .redirectUris("http://webadmin/home")
                 .scopes("write", "read");
 
     }
