@@ -63,7 +63,7 @@ public class AuthorizationServerConfig {
                 .scope("write")
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
-                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .accessTokenTimeToLive(Duration.ofMinutes(15))
                         .build())
                 .build();
 
