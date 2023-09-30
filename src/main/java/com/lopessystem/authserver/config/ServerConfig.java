@@ -1,40 +1,26 @@
 package com.lopessystem.authserver.config;
 
-/*
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
 @Configuration
-@EnableWebSecurity
-public class ServerConfig extends WebSecurityConfigurerAdapter {
+public class ServerConfig {
 
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("anderson")
-                .password(passwordEncoder().encode("12345"))
-                .roles("ADMIN")
-                .and()
-                .withUser("helena")
-                .password(passwordEncoder().encode("12345"))
-                .roles("USER");
+    @Bean
+    InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
+        var user1 = User.withUsername("anderson").password(encoder.encode("password")).roles("ADMIN", "USER").build();
+        var user2 = User.withUsername("helena").password(encoder.encode("password")).roles("USER").build();
+        return new InMemoryUserDetailsManager(user1, user2);
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
-
-
-    @Bean
-    @Override
-    protected AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
-    }
-
-    @Bean
-    @Override
-    protected UserDetailsService userDetailsService() {
-        return super.userDetailsService();
-    }
 }
-*/
 
