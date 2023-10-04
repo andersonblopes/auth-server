@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -32,6 +34,7 @@ import org.springframework.security.oauth2.server.authorization.settings.OAuth2T
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -103,12 +106,12 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public RegisteredClientRepository clientRepository(PasswordEncoder encoder, ApplicationConfig applicationConfig) {
+    public RegisteredClientRepository clientRepository(ApplicationConfig applicationConfig) {
 
         RegisteredClient clinicApi = RegisteredClient
                 .withId(UUID.randomUUID().toString())
                 .clientId("clinic-api")
-                .clientSecret(encoder.encode("api-123"))
+                .clientSecret(encoder().encode("api-123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
@@ -130,7 +133,7 @@ public class AuthorizationServerConfig {
         RegisteredClient resourceServer = RegisteredClient
                 .withId(UUID.randomUUID().toString())
                 .clientId("resource-server-app")
-                .clientSecret(encoder.encode("check123"))
+                .clientSecret(encoder().encode("check123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .build();
@@ -182,6 +185,18 @@ public class AuthorizationServerConfig {
             throw new IllegalStateException(ex);
         }
         return keyPair;
+    }
+
+    @Bean
+    InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+        var user1 = User.withUsername("anderson").password(encoder().encode("password")).roles("ADMIN", "USER").build();
+        var user2 = User.withUsername("helena").password(encoder().encode("password")).roles("USER").build();
+        return new InMemoryUserDetailsManager(user1, user2);
+    }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
     }
 
 }
