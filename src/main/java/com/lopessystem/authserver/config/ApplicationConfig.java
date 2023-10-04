@@ -20,6 +20,8 @@ public class ApplicationConfig {
     @NotBlank
     private String providerUrl;
 
+    private String passwordEncode;
+
     @NotNull
     private List<String> allowedUris;
 }

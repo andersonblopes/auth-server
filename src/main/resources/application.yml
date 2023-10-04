@@ -21,5 +21,6 @@ spring:
 
 app:
   auth:
+    password-encode: md5
     provider-url: http://localhost:9000
     allowed-uris: http://127.0.0.1:8080/v1/doctors,https://oidcdebugger.com/debug

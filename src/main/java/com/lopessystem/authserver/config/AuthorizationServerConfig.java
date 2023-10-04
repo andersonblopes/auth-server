@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -55,6 +56,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 public class AuthorizationServerConfig {
 
+    @Autowired
+    private ApplicationConfig applicationConfig;
+
     @Bean
     @Order(1)
     SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
@@ -99,19 +103,19 @@ public class AuthorizationServerConfig {
 
 
     @Bean
-    public AuthorizationServerSettings providerSettings(ApplicationConfig applicationConfig) {
+    public AuthorizationServerSettings providerSettings() {
         return AuthorizationServerSettings.builder()
                 .issuer(applicationConfig.getProviderUrl())
                 .build();
     }
 
     @Bean
-    public RegisteredClientRepository clientRepository(ApplicationConfig applicationConfig) {
+    public RegisteredClientRepository clientRepository(PasswordEncoder encoder) {
 
         RegisteredClient clinicApi = RegisteredClient
                 .withId(UUID.randomUUID().toString())
                 .clientId("clinic-api")
-                .clientSecret(encoder().encode("api-123"))
+                .clientSecret(encoder.encode("api-123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
@@ -133,7 +137,7 @@ public class AuthorizationServerConfig {
         RegisteredClient resourceServer = RegisteredClient
                 .withId(UUID.randomUUID().toString())
                 .clientId("resource-server-app")
-                .clientSecret(encoder().encode("check123"))
+                .clientSecret(encoder.encode("check123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .build();
@@ -188,15 +192,19 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-        var user1 = User.withUsername("anderson").password(encoder().encode("password")).roles("ADMIN", "USER").build();
-        var user2 = User.withUsername("helena").password(encoder().encode("password")).roles("USER").build();
+    InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
+        var user1 = User.withUsername("anderson").password(encoder.encode("password")).roles("ADMIN", "USER").build();
+        var user2 = User.withUsername("helena").password(encoder.encode("password")).roles("USER").build();
         return new InMemoryUserDetailsManager(user1, user2);
     }
 
     @Bean
     public PasswordEncoder encoder() {
+        if ("md5".equalsIgnoreCase(applicationConfig.getPasswordEncode())) {
+            return new MD5PasswordEncoder();
+        }
         return new BCryptPasswordEncoder();
     }
+
 
 }
