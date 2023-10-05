@@ -130,7 +130,7 @@ public class AuthorizationServerConfig {
                         .refreshTokenTimeToLive(Duration.ofDays(7))
                         .build())
                 .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(true)
+                        .requireAuthorizationConsent(false)
                         .build())
                 .build();
 
