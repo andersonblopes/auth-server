@@ -137,48 +137,6 @@ public class AuthorizationServerConfig {
      */
     @Bean
     public JdbcRegisteredClientRepository clientRepository(JdbcOperations jdbcOperations) {
-    /*
-        public JdbcRegisteredClientRepository clientRepository(PasswordEncoder encoder, JdbcOperations jdbcOperations) {
-
-
-        RegisteredClient isApi = RegisteredClient
-                .withId(UUID.randomUUID().toString())
-                .clientId("is-api")
-                .clientSecret(encoder.encode("is@pi-123"))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUris(uris ->
-                        uris.addAll(applicationConfig.getAllowedUris()))
-                .scope("read")
-                .scope("write")
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
-                        .accessTokenTimeToLive(Duration.ofMinutes(15))
-                        .refreshTokenTimeToLive(Duration.ofDays(1))
-                        .build())
-                .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(false)
-                        .build())
-                .build();
-
-        RegisteredClient resourceServer = RegisteredClient
-                .withId(UUID.randomUUID().toString())
-                .clientId("resource-server")
-                .clientSecret(encoder.encode("checkToken123"))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
-                .build();
-
-        JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcOperations);
-
-        repository.save(isApi);
-        repository.save(resourceServer);
-
-        return repository;
-
-         */
         return new JdbcRegisteredClientRepository(jdbcOperations);
     }
 
