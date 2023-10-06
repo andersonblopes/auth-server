@@ -14,6 +14,9 @@ import lombok.Setter;
 import java.util.UUID;
 
 
+/**
+ * The type Role.
+ */
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -35,5 +38,5 @@ public class Role {
     private Integer system;
 
     @Column(name = "perfil")
-    private String role;
+    private String permission;
 }

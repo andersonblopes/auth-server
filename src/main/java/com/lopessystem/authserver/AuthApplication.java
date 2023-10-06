@@ -3,11 +3,19 @@ package com.lopessystem.authserver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * The type Auth application.
+ */
 @SpringBootApplication
 public class AuthApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AuthApplication.class, args);
-	}
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(AuthApplication.class, args);
+    }
 
 }

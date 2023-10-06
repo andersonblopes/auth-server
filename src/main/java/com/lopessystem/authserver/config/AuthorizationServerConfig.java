@@ -54,6 +54,9 @@ import java.util.stream.Collectors;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+/**
+ * The type Authorization server config.
+ */
 @Slf4j
 @Configuration
 public class AuthorizationServerConfig {
@@ -61,6 +64,13 @@ public class AuthorizationServerConfig {
     @Autowired
     private ApplicationConfig applicationConfig;
 
+    /**
+     * Authorization server security filter chain security filter chain.
+     *
+     * @param http the http
+     * @return the security filter chain
+     * @throws Exception the exception
+     */
     @Bean
     @Order(1)
     SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
@@ -69,24 +79,31 @@ public class AuthorizationServerConfig {
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(withDefaults());
         http
-                .exceptionHandling((exceptions) -> exceptions
+                .exceptionHandling(exceptions -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
-                .oauth2ResourceServer((resourceServer) -> resourceServer
+                .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(withDefaults()));
 
         return http.build();
     }
 
+    /**
+     * Default security filter chain security filter chain.
+     *
+     * @param http the http
+     * @return the security filter chain
+     * @throws Exception the exception
+     */
     @Bean
     @Order(2)
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
-                .authorizeHttpRequests((authorize) -> authorize
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin
@@ -96,14 +113,24 @@ public class AuthorizationServerConfig {
         return http.build();
     }
 
+    /**
+     * Web security customizer web security customizer.
+     *
+     * @return the web security customizer
+     */
     @Bean
     WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.debug(false)
+        return web -> web.debug(false)
                 .ignoring()
                 .requestMatchers("/webjars/**", "/images/**", "/css/**", "/assets/**", "/favicon.ico");
     }
 
 
+    /**
+     * Provider settings authorization server settings.
+     *
+     * @return the authorization server settings
+     */
     @Bean
     public AuthorizationServerSettings providerSettings() {
         return AuthorizationServerSettings.builder()
@@ -111,6 +138,12 @@ public class AuthorizationServerConfig {
                 .build();
     }
 
+    /**
+     * Client repository registered client repository.
+     *
+     * @param encoder the encoder
+     * @return the registered client repository
+     */
     @Bean
     public RegisteredClientRepository clientRepository(PasswordEncoder encoder) {
 
@@ -147,6 +180,13 @@ public class AuthorizationServerConfig {
         return new InMemoryRegisteredClientRepository(Arrays.asList(clinicApi, resourceServer));
     }
 
+    /**
+     * O auth 2 authorization service o auth 2 authorization service.
+     *
+     * @param jdbcOperations             the jdbc operations
+     * @param registeredClientRepository the registered client repository
+     * @return the o auth 2 authorization service
+     */
     @Bean
     public OAuth2AuthorizationService oAuth2AuthorizationService(JdbcOperations jdbcOperations,
                                                                  RegisteredClientRepository registeredClientRepository) {
@@ -156,6 +196,11 @@ public class AuthorizationServerConfig {
         );
     }
 
+    /**
+     * Token customizer o auth 2 token customizer.
+     *
+     * @return the o auth 2 token customizer
+     */
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
@@ -168,6 +213,11 @@ public class AuthorizationServerConfig {
         };
     }
 
+    /**
+     * Jwk source jwk source.
+     *
+     * @return the jwk source
+     */
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
         KeyPair keyPair = generateRsaKey();
@@ -193,6 +243,11 @@ public class AuthorizationServerConfig {
         return keyPair;
     }
 
+    /**
+     * Encoder password encoder.
+     *
+     * @return the password encoder
+     */
     @Bean
     public PasswordEncoder encoder() {
         if ("md5".equalsIgnoreCase(applicationConfig.getPasswordEncode())) {
@@ -201,6 +256,11 @@ public class AuthorizationServerConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Authentication provider authentication provider.
+     *
+     * @return the authentication provider
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -209,13 +269,14 @@ public class AuthorizationServerConfig {
         return authenticationProvider;
     }
 
+    /**
+     * User details service user details service.
+     *
+     * @return the user details service
+     */
     @Bean
     public UserDetailsService userDetailsService() {
-        // var user1 = User.withUsername("anderson").password(encoder.encode("password")).roles("ADMIN", "USER").build();
-        // var user2 = User.withUsername("helena").password(encoder.encode("password")).roles("USER").build();
-        // return new InMemoryUserDetailsManager(user1, user2);
         return new UserInfoUserDetailsService();
     }
-
 
 }

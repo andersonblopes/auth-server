@@ -18,6 +18,9 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * The type User info.
+ */
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -72,6 +75,11 @@ public class UserInfo {
             inverseJoinColumns = @JoinColumn(name = "fkperfil"))
     private Set<Role> roles;
 
+    /**
+     * Gets password.
+     *
+     * @return the password
+     */
     public String getPassword() {
         this.password = this.id + ":" + this.password;
         return password;

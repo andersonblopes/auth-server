@@ -5,8 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
+import static java.util.Objects.nonNull;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -28,23 +28,23 @@ public class MD5PasswordEncoder implements PasswordEncoder {
 
     @Override
     public String encode(CharSequence charSequence) {
-        return criptografarMd5(charSequence.toString());
+        return encrypt(charSequence.toString());
     }
 
     @Override
-    public boolean matches(CharSequence digitado, String senhaBanco) {
+    public boolean matches(CharSequence typed, String userPassword) {
         String password;
         String encryptedPassword;
 
-        String part1 = separarValor(senhaBanco, 0);
-        if (!part1.equalsIgnoreCase(senhaBanco)) {
-            password = concatSenha(part1, digitado.toString());
-            encryptedPassword = criptografarMd5(password);
+        String part1 = splitValue(userPassword, 0);
+        if (!part1.equalsIgnoreCase(userPassword)) {
+            password = concatPassword(part1, typed.toString());
+            encryptedPassword = encrypt(password);
         } else {
-            encryptedPassword = criptografarMd5(digitado.toString());
+            encryptedPassword = encrypt(typed.toString());
         }
 
-        return hasText(encryptedPassword) && compararSenhas(encryptedPassword, senhaBanco);
+        return hasText(encryptedPassword) && comparePassword(encryptedPassword, userPassword);
     }
 
     /**
@@ -56,9 +56,9 @@ public class MD5PasswordEncoder implements PasswordEncoder {
      */
     public String encodeMD5(final Integer userPk, final String password) {
         final String saltedPassword = String.format("%s%s", userPk, password);
-        final String encodedPassword = criptografarMd5(saltedPassword);
+        final String encodedPassword = encrypt(saltedPassword);
 
-        return Objects.nonNull(encodedPassword) ? encodedPassword.toLowerCase() : null;
+        return nonNull(encodedPassword) ? encodedPassword.toLowerCase() : null;
     }
 
     private static char[] hexCodes(byte[] text) {
@@ -74,54 +74,51 @@ public class MD5PasswordEncoder implements PasswordEncoder {
     }
 
     /**
-     * Criptografar md 5 string.
+     * Encrypt string.
      *
-     * @param pwd the pwd
+     * @param text the text
      * @return the string
      */
-    public static String criptografarMd5(String pwd) {
-        if (md != null) {
-            return new String(hexCodes(md.digest(pwd.getBytes())));
-        }
-        return null;
+    public static String encrypt(String text) {
+        return nonNull(md) ? new String(hexCodes(md.digest(text.getBytes()))) : null;
     }
 
     /**
-     * Comparar senhas boolean.
+     * Compare password boolean.
      *
-     * @param digitado the digitado
-     * @param esperado the esperado
+     * @param typed    the typed
+     * @param expected the expected
      * @return the boolean
      */
-    public boolean compararSenhas(String digitado, String esperado) {
-        return digitado.equalsIgnoreCase(separarValor(esperado, 1));
+    public boolean comparePassword(String typed, String expected) {
+        return typed.equalsIgnoreCase(splitValue(expected, 1));
     }
 
     /**
-     * Separar valor string.
+     * Split value string.
      *
-     * @param texto   the texto
-     * @param posicao the posicao
+     * @param text     the text
+     * @param position the position
      * @return the string
      */
-    public String separarValor(String texto, int posicao) {
-        String[] pk = texto.split(":");
+    public String splitValue(String text, int position) {
+        String[] pk = text.split(":");
         if (pk.length == 2) {
-            return pk[posicao];
+            return pk[position];
         } else {
-            return texto;
+            return text;
         }
     }
 
     /**
-     * Concat senha string.
+     * Concat password string.
      *
-     * @param pk    the pk
-     * @param senha the senha
+     * @param pk       the pk
+     * @param password the password
      * @return the string
      */
-    public String concatSenha(String pk, String senha) {
-        return pk + senha;
+    public String concatPassword(String pk, String password) {
+        return pk + password;
     }
 
 }

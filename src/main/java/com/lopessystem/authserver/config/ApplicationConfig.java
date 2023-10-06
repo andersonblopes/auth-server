@@ -10,6 +10,9 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+/**
+ * The type Application config.
+ */
 @Component
 @Getter
 @Setter
