@@ -6,7 +6,7 @@ spring:
   datasource:
     username: ${AUTH_DB_USERNAME:sonar}
     password: ${AUTH_DB_PASSWORD:sonar}
-    url: jdbc:postgresql://${AUTH_DB_SERVER_URL:localhost}:${AUTH_DB_SERVER_PORT:5432}/auth
+    url: jdbc:postgresql://${AUTH_DB_SERVER_URL:localhost}:${AUTH_DB_SERVER_PORT:5432}/${AUTH_DB:auth}
   jpa:
     database: postgresql
     show-sql: true

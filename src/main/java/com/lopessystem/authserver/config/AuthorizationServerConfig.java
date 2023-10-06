@@ -1,5 +1,6 @@
 package com.lopessystem.authserver.config;
 
+import com.lopessystem.authserver.user.UserInfoUserDetailsService;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -12,11 +13,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcOperations;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -35,7 +38,6 @@ import org.springframework.security.oauth2.server.authorization.settings.OAuth2T
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -192,18 +194,27 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
-        var user1 = User.withUsername("anderson").password(encoder.encode("password")).roles("ADMIN", "USER").build();
-        var user2 = User.withUsername("helena").password(encoder.encode("password")).roles("USER").build();
-        return new InMemoryUserDetailsManager(user1, user2);
-    }
-
-    @Bean
     public PasswordEncoder encoder() {
         if ("md5".equalsIgnoreCase(applicationConfig.getPasswordEncode())) {
             return new MD5PasswordEncoder();
         }
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(encoder());
+        return authenticationProvider;
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        // var user1 = User.withUsername("anderson").password(encoder.encode("password")).roles("ADMIN", "USER").build();
+        // var user2 = User.withUsername("helena").password(encoder.encode("password")).roles("USER").build();
+        // return new InMemoryUserDetailsManager(user1, user2);
+        return new UserInfoUserDetailsService();
     }
 
 

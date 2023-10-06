@@ -7,6 +7,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
+import static org.springframework.util.StringUtils.hasText;
+
+/**
+ * The type Md 5 password encoder.
+ */
 @Slf4j
 public class MD5PasswordEncoder implements PasswordEncoder {
 
@@ -28,23 +33,26 @@ public class MD5PasswordEncoder implements PasswordEncoder {
 
     @Override
     public boolean matches(CharSequence digitado, String senhaBanco) {
-        //String pk = separarValor(senhaBanco, 0);
-        //String senha = concatSenha(pk, digitado.toString());
-        String senhaCriptografada = criptografarMd5(digitado.toString());
+        String password;
+        String encryptedPassword;
 
-        if (senhaCriptografada == null) {
-            return false;
+        String part1 = separarValor(senhaBanco, 0);
+        if (!part1.equalsIgnoreCase(senhaBanco)) {
+            password = concatSenha(part1, digitado.toString());
+            encryptedPassword = criptografarMd5(password);
+        } else {
+            encryptedPassword = criptografarMd5(digitado.toString());
         }
 
-        return compararSenhas(senhaCriptografada, senhaBanco);
+        return hasText(encryptedPassword) && compararSenhas(encryptedPassword, senhaBanco);
     }
 
     /**
-     * Encode a raw password into a valid MD5 password.
+     * Encode md 5 string.
      *
-     * @param userPk   The User PK.
-     * @param password The password.
-     * @implNote This algororithm is not secure and should be replaced by a more secure alternative (ex.: Argon2, BCrypt or PBKDF2).
+     * @param userPk   the user pk
+     * @param password the password
+     * @return the string
      */
     public String encodeMD5(final Integer userPk, final String password) {
         final String saltedPassword = String.format("%s%s", userPk, password);
@@ -65,6 +73,12 @@ public class MD5PasswordEncoder implements PasswordEncoder {
         return hexOutput;
     }
 
+    /**
+     * Criptografar md 5 string.
+     *
+     * @param pwd the pwd
+     * @return the string
+     */
     public static String criptografarMd5(String pwd) {
         if (md != null) {
             return new String(hexCodes(md.digest(pwd.getBytes())));
@@ -72,16 +86,40 @@ public class MD5PasswordEncoder implements PasswordEncoder {
         return null;
     }
 
+    /**
+     * Comparar senhas boolean.
+     *
+     * @param digitado the digitado
+     * @param esperado the esperado
+     * @return the boolean
+     */
     public boolean compararSenhas(String digitado, String esperado) {
-        //return digitado.equals(separarValor(esperado, 1));
-        return digitado.equalsIgnoreCase(esperado);
+        return digitado.equalsIgnoreCase(separarValor(esperado, 1));
     }
 
+    /**
+     * Separar valor string.
+     *
+     * @param texto   the texto
+     * @param posicao the posicao
+     * @return the string
+     */
     public String separarValor(String texto, int posicao) {
         String[] pk = texto.split(":");
-        return pk[posicao];
+        if (pk.length == 2) {
+            return pk[posicao];
+        } else {
+            return texto;
+        }
     }
 
+    /**
+     * Concat senha string.
+     *
+     * @param pk    the pk
+     * @param senha the senha
+     * @return the string
+     */
     public String concatSenha(String pk, String senha) {
         return pk + senha;
     }
