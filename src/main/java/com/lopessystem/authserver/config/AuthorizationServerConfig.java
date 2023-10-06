@@ -217,7 +217,7 @@ public class AuthorizationServerConfig {
     }
 
     /**
-     * Authentication provider authentication provider.
+     * Authentication provider.
      *
      * @return the authentication provider
      */
