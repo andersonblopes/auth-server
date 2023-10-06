@@ -22,20 +22,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,8 +40,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.time.Duration;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -141,16 +133,18 @@ public class AuthorizationServerConfig {
     /**
      * Client repository registered client repository.
      *
-     * @param encoder the encoder
      * @return the registered client repository
      */
     @Bean
-    public RegisteredClientRepository clientRepository(PasswordEncoder encoder) {
+    public JdbcRegisteredClientRepository clientRepository(JdbcOperations jdbcOperations) {
+    /*
+        public JdbcRegisteredClientRepository clientRepository(PasswordEncoder encoder, JdbcOperations jdbcOperations) {
 
-        RegisteredClient clinicApi = RegisteredClient
+
+        RegisteredClient isApi = RegisteredClient
                 .withId(UUID.randomUUID().toString())
-                .clientId("clinic-api")
-                .clientSecret(encoder.encode("api-123"))
+                .clientId("is-api")
+                .clientSecret(encoder.encode("is@pi-123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
@@ -162,7 +156,7 @@ public class AuthorizationServerConfig {
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
                         .accessTokenTimeToLive(Duration.ofMinutes(15))
-                        .refreshTokenTimeToLive(Duration.ofDays(7))
+                        .refreshTokenTimeToLive(Duration.ofDays(1))
                         .build())
                 .clientSettings(ClientSettings.builder()
                         .requireAuthorizationConsent(false)
@@ -171,13 +165,21 @@ public class AuthorizationServerConfig {
 
         RegisteredClient resourceServer = RegisteredClient
                 .withId(UUID.randomUUID().toString())
-                .clientId("resource-server-app")
-                .clientSecret(encoder.encode("check123"))
+                .clientId("resource-server")
+                .clientSecret(encoder.encode("checkToken123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .build();
 
-        return new InMemoryRegisteredClientRepository(Arrays.asList(clinicApi, resourceServer));
+        JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcOperations);
+
+        repository.save(isApi);
+        repository.save(resourceServer);
+
+        return repository;
+
+         */
+        return new JdbcRegisteredClientRepository(jdbcOperations);
     }
 
     /**

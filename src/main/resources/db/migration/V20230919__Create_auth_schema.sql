@@ -1,4 +1,4 @@
-CREATE TABLE oauth2_authorization (
+CREATE TABLE public.oauth2_authorization (
     id varchar(100) NOT NULL,
     registered_client_id varchar(100) NOT NULL,
     principal_name varchar(200) NOT NULL,

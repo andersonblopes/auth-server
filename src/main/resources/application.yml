@@ -14,10 +14,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  redis:
-    host: localhost
-    password:
-    port: 6379
 
 app:
   auth:
