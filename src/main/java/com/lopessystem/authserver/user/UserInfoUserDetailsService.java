@@ -1,12 +1,11 @@
 package com.lopessystem.authserver.user;
 
 import com.lopessystem.authserver.entity.Role;
-import com.lopessystem.authserver.entity.UserInfo;
+import com.lopessystem.authserver.entity.User;
 import com.lopessystem.authserver.repository.UserInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,23 +27,24 @@ public class UserInfoUserDetailsService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserInfo userInfo = repository.findByLogin(username)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found " + username));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        User user = repository.findByLogin(login)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found " + login));
 
-        return new User(userInfo.getLogin(), userInfo.getPassword(), getAuthorities(userInfo));
+        return new org.springframework.security.core.userdetails.User(
+                user.getLogin(), user.getPassword(), getAuthorities(user));
     }
 
     /**
      * Gets authorities.
      *
-     * @param userInfo the user info
+     * @param user the user
      * @return the authorities
      */
-    public Collection<GrantedAuthority> getAuthorities(UserInfo userInfo) {
+    public Collection<GrantedAuthority> getAuthorities(User user) {
         List<GrantedAuthority> list = new ArrayList<>();
-        for (Role role : userInfo.getRoles()) {
-            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getPermission());
+        for (Role role : user.getRoles()) {
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getRole());
             list.add(authority);
         }
         return list;

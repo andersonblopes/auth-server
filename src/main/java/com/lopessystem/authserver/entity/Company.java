@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import lombok.Setter;
 import java.util.Set;
 
 /**
- * The type Role.
+ * The type Company.
  */
 @Getter
 @Setter
@@ -26,17 +26,26 @@ import java.util.Set;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "role", schema = "public")
-public class Role {
+@Table(name = "company", schema = "public")
+public class Company {
 
     @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "role")
-    private String role;
+    @Column(name = "description")
+    private String description;
 
-    @ManyToMany(mappedBy = "roles")
+    @OneToMany(mappedBy = "company")
     private Set<User> users;
+
+    /**
+     * Instantiates a new Company.
+     *
+     * @param id the id
+     */
+    public Company(Long id) {
+        this.id = id;
+    }
 }
